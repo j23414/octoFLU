@@ -284,7 +284,16 @@ def octoFLU(inFile=r"sample_data/query_sample.fasta",
     
 
 def main():
-    octoFLU(inFile = r"C:\Users\jenchang\Desktop\github\octoFLU\sample_data\query_sample.fasta")
+    inputFile = sys.argv[1]
+    if not os.path.exists(inputFile):
+        print("Well that's not an input file: "+inputFile)
+        inFile=r"sample_data/query_sample.fasta"
+        print("Will use sample_data/query_sample.fasta as an example")
+    else:
+        inFile=inputFile
+    
+    # Call octoFLU with default values
+    octoFLU(inFile = inFile)
     
     
 if __name__ == "__main__":
