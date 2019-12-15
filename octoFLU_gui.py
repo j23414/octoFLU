@@ -2,20 +2,60 @@
 
 """ Test octoFLU initial page
 This is a test
+To build the executable
+pyinstaller -F octoFLU_gui.py
 """
 
 import wx
 import os
 import os.path
-import subprocess
+#import subprocess
 import sys
 from shutil import which
 from shutil import copyfile
 import subprocess
 from octoFLU import octoFLU
 
+# Attempt at multi-threading, please someone help :(
+#import time
+#from threading import Thread
+#from pubsub import pub
+
 # === Globals
 version="v1.0"
+
+## === Threading so the GUI doesn't freeze
+#"""
+#website: http://www.blog.pythonlibrary.org/2010/05/22/wxpython-and-threads/
+#website: https://pypubsub.readthedocs.io/en/v4.0.3/usage/usage_basic.html
+#"""
+#
+#class TestThread(Thread):
+#    """Test Worker Thread Class."""
+# 
+#    #----------------------------------------------------------------------
+#    def __init__(self):
+#        """Init Worker Thread Class."""
+#        Thread.__init__(self)
+#        self.start()    # start the thread
+# 
+#    #----------------------------------------------------------------------
+#    def run(self):
+#        """Run Worker Thread."""
+#        # This is the code executing in the new thread.
+#        for i in range(6):
+#            time.sleep(10)
+#            wx.CallAfter(self.postTime, i)
+#        time.sleep(5)
+#        wx.CallAfter(pub.sendMessage, "update", "Thread finished!")
+# 
+#    #----------------------------------------------------------------------
+#    def postTime(self, amt):
+#        """
+#        Send time to GUI
+#        """
+#        amtOfTime = (amt + 1) * 10
+#        pub.sendMessage("update", amtOfTime)
 
 class MainFrame(wx.Frame):
     """
@@ -59,29 +99,21 @@ class MainFrame(wx.Frame):
         helpmsg_st.SetFont(font)
 
         makeblastdb_path = self.config.Read("makeblastdb")
-#        if(len(makeblastdb_path)<1):
-#            makeblastdb_path = os.popen("which makeblastdb").read()
         self.makeblastdb_fp = wx.FilePickerCtrl(pnl, wx.ID_ANY, path = makeblastdb_path,
                                                 message="Select a file",
                                                 style = wx.FLP_OPEN|wx.FLP_USE_TEXTCTRL)
 
         blastn_path = self.config.Read("blastn")
-#        if(len(blastn_path)<1):
-#            blastn_path = os.popen("which blastn").read()
         self.blastn_fp = wx.FilePickerCtrl(pnl, wx.ID_ANY, path = blastn_path,
                                            message="Select a file",
                                            style = wx.FLP_OPEN|wx.FLP_USE_TEXTCTRL)
 
         mafft_path = self.config.Read("mafft")
-#        if(len(mafft_path)<1):
-#            mafft_path = os.popen("which mafft").read()
         self.mafft_fp = wx.FilePickerCtrl(pnl, wx.ID_ANY, path = mafft_path,
                                           message="Select a file",
                                            style = wx.FLP_OPEN|wx.FLP_USE_TEXTCTRL)
 
         fasttree_path = self.config.Read("fasttree")
-#        if(len(fasttree_path)<1):
-#            fasttree_path = os.popen("which fasttree").read()
         self.fasttree_fp = wx.FilePickerCtrl(pnl, wx.ID_ANY, path = fasttree_path,
                                              message="Select a file",
                                            style = wx.FLP_OPEN|wx.FLP_USE_TEXTCTRL)
@@ -101,6 +133,21 @@ class MainFrame(wx.Frame):
 
         self.run_bt = wx.Button(pnl, wx.ID_ANY, label="Classify influenza genes")
         
+#        ## === thread tutorial
+#        self.displayLbl = wx.StaticText(pnl, label="Amount of time since thread started goes here")
+#        self.btn = btn = wx.Button(pnl, label="Start Thread")
+# 
+#        btn.Bind(wx.EVT_BUTTON, self.onButton)
+# 
+#        sizer = wx.BoxSizer(wx.VERTICAL)
+#        sizer.Add(self.displayLbl, 0, wx.ALL|wx.CENTER, 5)
+#        sizer.Add(btn, 0, wx.ALL|wx.CENTER, 5)
+#        #panel.SetSizer(sizer)
+# 
+#        # create a pubsub receiver
+#        pub.subscribe(self.updateDisplay, "update")
+#        ## === end thread tutorial
+        
         fgs.AddMany([(makeblastdb_st),(self.makeblastdb_fp, wx.ID_ANY, wx.EXPAND),
                      (blastn_st), (self.blastn_fp, wx.ID_ANY, wx.EXPAND),
                      (mafft_st), (self.mafft_fp, wx.ID_ANY, wx.EXPAND),
@@ -108,7 +155,8 @@ class MainFrame(wx.Frame):
                      (reference_st), (self.reference_fp, wx.ID_ANY, wx.EXPAND),
                      (input_st), (self.input_fp, wx.ID_ANY, wx.EXPAND),
                      (helpmsg_st), (self.helpmsg_tc, wx.ID_ANY, wx.EXPAND),
-                     (spacer_st),(self.run_bt, wx.ID_ANY,wx.EXPAND)])
+                     (spacer_st),(self.run_bt, wx.ID_ANY,wx.EXPAND)]) #,
+#                     (self.displayLbl),(self.btn, wx.ID_ANY, wx.EXPAND)])
 
         fgs.AddGrowableRow(6,1)
         fgs.AddGrowableCol(1,1)
@@ -117,9 +165,7 @@ class MainFrame(wx.Frame):
         pnl.SetSizer(hbox)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Bind(wx.EVT_BUTTON, self.OnRun, self.run_bt)
-        wx.Shell(command='echo "Hello world"')
-
-
+        wx.Shell(command='echo "octoFLU shell initialized"')
 
         
     def onFilePicker(self, event):
@@ -139,14 +185,18 @@ class MainFrame(wx.Frame):
         self.config.Write("reference", self.reference_fp.GetPath())
         # Exit program
         event.Skip()
+        
 
     def OnRun(self, event):
-        outDir = self.input_fp.GetPath()+"_output"
-        
-        if not os.path.exists(outDir):
-            os.mkdir(outDir)
-        else:
-            print(outDir + " already exists")
+        if(len(self.input_fp.GetPath())==0):
+            self.helpmsg_tc.AppendText("  No input file provided... please select an input file.\n")
+            return
+#        outDir = self.input_fp.GetPath()+"_output"
+#        
+#        if not os.path.exists(outDir):
+#            os.mkdir(outDir)
+#        else:
+#            print(outDir + " already exists")
             
         # Call octoFLU
         octoFLU(self.input_fp.GetPath(),
@@ -156,16 +206,28 @@ class MainFrame(wx.Frame):
                 FASTTREE=self.fasttree_fp.GetPath(),
                 reference=self.reference_fp.GetPath()
                 )
-
-#        wx.Shell(command="echo running...")
-#        wx.Shell(command="echo " + self.mafft_fp.GetPath()
-        # ==== Create your Blast Database
-#        subprocess.call([self.makeblastdb_fp.GetPath(),"-in",self.reference_fp.GetPath(),"-dbtype","nucl"])
-        # ==== Search your blast database
-#        subprocess.call([self.blastn_fp.GetPath(),"-db",self.reference_fp.GetPath(),"-query",self.input_fp.GetPath(),"-num_alignments","1","-outfmt","6", "-out",outDir+"/blast_output.txt"])
-#        wx.Shell(command= "\"" + self.mafft_fp.GetPath() + "\"")
         
-
+#    def onButton(self, event):
+#        """
+#        Runs the thread
+#        """
+#        TestThread()
+#        self.displayLbl.SetLabel("Thread started!")
+#        btn = event.GetEventObject()
+#        btn.Disable()
+        
+#    def updateDisplay(self, msg):
+#        """
+#        Receives data from thread and updates the display
+#        """
+#        t = msg.data
+#        if isinstance(t, int):
+#            self.displayLbl.SetLabel("Time since thread started: %s seconds" % t)
+#        else:
+#            self.displayLbl.SetLabel("%s" % t)
+#            self.btn.Enable()
+            
+            
 if __name__ == '__main__':
     app = wx.App()
     frm = MainFrame(None, title="octoFLU " + version, size=(600,500))
