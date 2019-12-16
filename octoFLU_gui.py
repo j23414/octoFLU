@@ -99,21 +99,29 @@ class MainFrame(wx.Frame):
         helpmsg_st.SetFont(font)
 
         makeblastdb_path = self.config.Read("makeblastdb")
+        if (len(makeblastdb_path)==0): makeblastdb_path=which("makeblastdb")
+        if makeblastdb_path is None: makeblastdb_path=""
         self.makeblastdb_fp = wx.FilePickerCtrl(pnl, wx.ID_ANY, path = makeblastdb_path,
                                                 message="Select a file",
                                                 style = wx.FLP_OPEN|wx.FLP_USE_TEXTCTRL)
 
         blastn_path = self.config.Read("blastn")
+        if (len(blastn_path)==0): blastn_path=which("blastn")
+        if blastn_path is None: blastn_path=""
         self.blastn_fp = wx.FilePickerCtrl(pnl, wx.ID_ANY, path = blastn_path,
                                            message="Select a file",
                                            style = wx.FLP_OPEN|wx.FLP_USE_TEXTCTRL)
 
         mafft_path = self.config.Read("mafft")
+        if (len(mafft_path)==0): mafft_path=which("mafft")
+        if mafft_path is None: mafft_path=""
         self.mafft_fp = wx.FilePickerCtrl(pnl, wx.ID_ANY, path = mafft_path,
                                           message="Select a file",
                                            style = wx.FLP_OPEN|wx.FLP_USE_TEXTCTRL)
 
         fasttree_path = self.config.Read("fasttree")
+        if (len(fasttree_path)==0): fasttree_path=which("fasttree")
+        if fasttree_path is None: fasttree_path=""
         self.fasttree_fp = wx.FilePickerCtrl(pnl, wx.ID_ANY, path = fasttree_path,
                                              message="Select a file",
                                            style = wx.FLP_OPEN|wx.FLP_USE_TEXTCTRL)
@@ -191,12 +199,6 @@ class MainFrame(wx.Frame):
         if(len(self.input_fp.GetPath())==0):
             self.helpmsg_tc.AppendText("  No input file provided... please select an input file.\n")
             return
-#        outDir = self.input_fp.GetPath()+"_output"
-#        
-#        if not os.path.exists(outDir):
-#            os.mkdir(outDir)
-#        else:
-#            print(outDir + " already exists")
             
         # Call octoFLU
         octoFLU(self.input_fp.GetPath(),

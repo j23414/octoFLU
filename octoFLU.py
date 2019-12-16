@@ -20,6 +20,8 @@ from treedist import treedist
 reference = r"C:\Users\jenchang\Desktop\github\octoFLU\reference_data\reference.fa"
 
 # ===== Connect your programs here, Linux style
+# use r"thepath/here" to make sure paths are saved as raw strings
+# otherwise "C:\Uesrs" paths on windows will throw an error 
 BLASTN = "/Users/michael.zeller/ncbi_blast/blastn"
 BLASTN = "blastn"
 MAKEBLASTDB = "/Users/michael.zeller/ncbi_blast/makeblastdb"
@@ -29,7 +31,6 @@ MAFFT = "/usr/local/bin/mafft"
 MAFFT = r"C:\Users\jenchang\Desktop\mafft-7.450-win64-signed\mafft-win\mafft.bat"
 FASTTREE = "/Users/michael.zeller/FastTree/FastTree"
 FASTTREE = r"C:\cygwin64\home\jenchang\bin\FastTree.exe"
-NN_CLASS = "treedist.py"
 PYTHON = "python"
 
 # ===== Windows Style program referencing. Reccomend using WHERE to find commands in cmd.exe
@@ -38,7 +39,6 @@ PYTHON = "python"
 # SMOF = "E:/Anaconda3/Scripts/smof.exe"
 # MAFFT = "E:/lab/tools/mafft-win/mafft.bat"
 # FASTTREE = "E:/lab/tools/FastTree.exe"
-# NN_CLASS = "treedist.py"
 # PYTHON = "E:\Anaconda3\python.exe"
 
 # ===== Uncomment and connect your programs here using full path names
@@ -47,7 +47,6 @@ PYTHON = "python"
 # SMOF=/usr/local/bin/smof
 # MAFFT=/usr/local/bin/mafft
 # FASTTREE=usr/local/bin/FastTree
-# NN_CLASS=nn_classifier.R
 # ANNOT_FASTA=annotate_headers.pl
 
 def checkOctoDependencies(BLASTN=BLASTN, MAKEBLASTDB=MAKEBLASTDB, SMOF=SMOF, 
@@ -59,7 +58,7 @@ def checkOctoDependencies(BLASTN=BLASTN, MAKEBLASTDB=MAKEBLASTDB, SMOF=SMOF,
     """
     
     print("... checking dependencies:\n")
-    # Attempt to use python3, but if not there check if python is python3
+    # Check if running python version 3 (not 2). Quit if not version 3
     if sys.version_info[0] < 3:
         sys.exit("Must be using Python 3")
         
@@ -105,7 +104,7 @@ def makeDistinct(elemList):
 
 def octoFLU(inFile=r"sample_data/query_sample.fasta", 
             BLASTN=BLASTN, MAKEBLASTDB=MAKEBLASTDB, MAFFT=MAFFT, SMOF=SMOF,
-            FASTTREE=FASTTREE, NN_CLASS=NN_CLASS, reference=reference):
+            FASTTREE=FASTTREE, reference=reference):
     print("octoFLU INPUT: " + inFile + "\n")
     
     checkOctoDependencies(BLASTN=BLASTN, MAKEBLASTDB=MAKEBLASTDB, MAFFT=MAFFT, SMOF=SMOF, FASTTREE=FASTTREE)
@@ -248,34 +247,24 @@ def octoFLU(inFile=r"sample_data/query_sample.fasta",
     open(baseName+'_Final_Output.txt', 'w').close()
     if os.path.isfile(outDir + "/H1.tre"):
         treedist(outDir + "/H1.tre", [5,1,8], baseName + "_Final_Output.txt")
-        #out = subprocess.run(["" + PYTHON + " " + NN_CLASS + " " + "-i " + outDir + "/H1.tre -c 5,1,8 i>> " + baseName + "_Final_Output.txt"], shell = True, check = True)
     if os.path.isfile(outDir + "/H3.tre"):
         treedist(outDir + "/H3.tre", [5,1,8], baseName + "_Final_Output.txt")
-        #subprocess.run(PYTHON + " " + NN_CLASS + " " + "-i " + outDir + "/H3.tre -c 5,1,8 >> " + baseName + "_Final_Output.txt", shell = True)
     if os.path.isfile(outDir + "/N1.tre"):
         treedist(outDir + "/N1.tre", [5,1], baseName + "_Final_Output.txt")
-        #subprocess.run(PYTHON + " " + NN_CLASS + " " + "-i " + outDir + "/N1.tre -c 5,1 >> " + baseName + "_Final_Output.txt", shell = True)
     if os.path.isfile(outDir + "/N2.tre"):
         treedist(outDir + "/N2.tre", [5,1], baseName + "_Final_Output.txt")
-        #subprocess.run(PYTHON + " " + NN_CLASS + " " + "-i " + outDir + "/N2.tre -c 5,1 >> " + baseName + "_Final_Output.txt", shell = True)
     if os.path.isfile(outDir + "/PB2.tre"):
         treedist(outDir + "/PB2.tre", [5,1], baseName + "_Final_Output.txt")
-        #subprocess.run(PYTHON + " " + NN_CLASS + " " + "-i " + outDir + "/PB2.tre -c 5,1 >> " + baseName + "_Final_Output.txt", shell = True)
     if os.path.isfile(outDir + "/PB1.tre"):
         treedist(outDir + "/PB1.tre", [5,1], baseName + "_Final_Output.txt")
-        #subprocess.run(PYTHON + " " + NN_CLASS + " " + "-i " + outDir + "/PB1.tre -c 5,1 >> " + baseName + "_Final_Output.txt", shell = True)
     if os.path.isfile(outDir + "/PA.tre"):
         treedist(outDir + "/PA.tre", [5,1], baseName + "_Final_Output.txt")
-        #subprocess.run(PYTHON + " " + NN_CLASS + " " + "-i " + outDir + "/PA.tre -c 5,1 >> " + baseName + "_Final_Output.txt", shell = True)
     if os.path.isfile(outDir + "/NP.tre"):
         treedist(outDir + "/NP.tre", [5,1], baseName + "_Final_Output.txt")
-        #subprocess.run(PYTHON + " " + NN_CLASS + " " + "-i " + outDir + "/NP.tre -c 5,1 >> " + baseName + "_Final_Output.txt", shell = True)
     if os.path.isfile(outDir + "/M.tre"):
         treedist(outDir + "/M.tre", [5,1], baseName + "_Final_Output.txt")
-        #subprocess.run(PYTHON + " " + NN_CLASS + " " + "-i " + outDir + "/M.tre -c 5,1 >> " + baseName + "_Final_Output.txt", shell = True)
     if os.path.isfile(outDir + "/NS.tre"):
         treedist(outDir + "/NS.tre", [5,1], baseName + "_Final_Output.txt")
-        #subprocess.run(PYTHON + " " + NN_CLASS + " " + "-i " + outDir + "/NS.tre -c 5,1 >> " + baseName + "_Final_Output.txt", shell = True)
     
     copyfile(baseName + "_Final_Output.txt", outDir + "/" + baseName + "_Final_Output.txt")
     
